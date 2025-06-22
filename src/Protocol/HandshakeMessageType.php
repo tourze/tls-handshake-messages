@@ -2,11 +2,19 @@
 
 namespace Tourze\TLSHandshakeMessages\Protocol;
 
+use Tourze\EnumExtra\Itemable;
+use Tourze\EnumExtra\ItemTrait;
+use Tourze\EnumExtra\Labelable;
+use Tourze\EnumExtra\Selectable;
+use Tourze\EnumExtra\SelectTrait;
+
 /**
  * 握手消息类型枚举
  */
-enum HandshakeMessageType: int
+enum HandshakeMessageType: int implements Itemable, Labelable, Selectable
 {
+    use ItemTrait;
+    use SelectTrait;
     /**
      * hello_request(0)
      */
@@ -92,6 +100,29 @@ enum HandshakeMessageType: int
             self::CERTIFICATE_VERIFY => 'CERTIFICATE_VERIFY',
             self::CLIENT_KEY_EXCHANGE => 'CLIENT_KEY_EXCHANGE',
             self::FINISHED => 'FINISHED',
+        };
+    }
+
+    /**
+     * 获取消息类型标签
+     *
+     * @return string 消息类型标签
+     */
+    public function getLabel(): string
+    {
+        return match($this) {
+            self::HELLO_REQUEST => 'Hello请求',
+            self::CLIENT_HELLO => '客户端Hello',
+            self::SERVER_HELLO => '服务器Hello',
+            self::NEW_SESSION_TICKET => '新会话票据',
+            self::ENCRYPTED_EXTENSIONS => '加密扩展',
+            self::CERTIFICATE => '证书',
+            self::SERVER_KEY_EXCHANGE => '服务器密钥交换',
+            self::CERTIFICATE_REQUEST => '证书请求',
+            self::SERVER_HELLO_DONE => '服务器Hello完成',
+            self::CERTIFICATE_VERIFY => '证书验证',
+            self::CLIENT_KEY_EXCHANGE => '客户端密钥交换',
+            self::FINISHED => '完成',
         };
     }
 

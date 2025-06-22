@@ -32,7 +32,6 @@ class HelloRequestMessage extends AbstractHandshakeMessage
      *
      * @param string $data 二进制数据
      * @return static 解码后的消息对象
-     * @throws \InvalidArgumentException 如果数据格式无效
      */
     public static function decode(string $data): static
     {
@@ -62,5 +61,15 @@ class HelloRequestMessage extends AbstractHandshakeMessage
     {
         $unpacked = unpack('C3', substr($data, $offset, 3));
         return ($unpacked[1] << 16) | ($unpacked[2] << 8) | $unpacked[3];
+    }
+
+    /**
+     * 获取消息类型
+     *
+     * @return HandshakeMessageType 消息类型
+     */
+    public function getType(): HandshakeMessageType
+    {
+        return self::MESSAGE_TYPE;
     }
 } 

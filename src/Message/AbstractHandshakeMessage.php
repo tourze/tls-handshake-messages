@@ -14,10 +14,7 @@ abstract class AbstractHandshakeMessage implements HandshakeMessageInterface
      *
      * @return HandshakeMessageType 消息类型
      */
-    public function getType(): HandshakeMessageType
-    {
-        return static::MESSAGE_TYPE;
-    }
+    abstract public function getType(): HandshakeMessageType;
     
     /**
      * 获取消息长度

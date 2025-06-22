@@ -41,16 +41,16 @@ class MessageSerializer
         HandshakeMessageInterface $message, 
         bool $useCache = true
     ): string {
-        if ($useCache && self::canMessageBeCached($message)) {
+        if ($useCache && (bool) self::canMessageBeCached($message)) {
             $cacheKey = self::generateCacheKey($message);
             
-            if (isset(self::$messageCache[$cacheKey])) {
+            if ((bool) isset(self::$messageCache[$cacheKey])) {
                 return self::$messageCache[$cacheKey];
             }
             
             $encodedMessage = $message->encode();
             
-            if (strlen($encodedMessage) <= 4096) { // 只缓存小于 4KB 的消息
+            if ((bool) strlen($encodedMessage) <= 4096) { // 只缓存小于 4KB 的消息
                 self::cacheEncodedMessage($cacheKey, $encodedMessage);
             }
             

@@ -5,6 +5,7 @@
   "license": "MIT",
   "require": {
     "php": "^8.1",
+    "tourze/enum-extra": "0.1.*",
     "tourze/tls-common": "0.0.*"
   },
   "require-dev": {

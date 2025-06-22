@@ -363,4 +363,14 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     {
         return pack('C3', ($value >> 16) & 0xFF, ($value >> 8) & 0xFF, $value & 0xFF);
     }
+
+    /**
+     * 获取消息类型
+     *
+     * @return HandshakeMessageType 消息类型
+     */
+    public function getType(): HandshakeMessageType
+    {
+        return self::MESSAGE_TYPE;
+    }
 } 

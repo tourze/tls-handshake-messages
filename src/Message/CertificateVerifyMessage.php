@@ -168,4 +168,14 @@ class CertificateVerifyMessage extends AbstractHandshakeMessage
         $unpacked = unpack('C3', substr($data, $offset, 3));
         return ($unpacked[1] << 16) | ($unpacked[2] << 8) | $unpacked[3];
     }
+
+    /**
+     * 获取消息类型
+     *
+     * @return HandshakeMessageType 消息类型
+     */
+    public function getType(): HandshakeMessageType
+    {
+        return self::MESSAGE_TYPE;
+    }
 }

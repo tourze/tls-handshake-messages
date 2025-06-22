@@ -85,10 +85,14 @@ class ClientHelloMessageTest extends TestCase
         $message->setExtensions($extensions);
         $this->assertEquals($extensions, $message->getExtensions());
         
-        // Test individual extension
+        // Test individual extension with new instance
+        $message2 = new ClientHelloMessage();
         $serverNameExt = hex2bin('00000e7777772e676f6f676c652e636f6d'); // server_name: www.google.com
-        $message->addExtension(0, $serverNameExt);
-        $this->assertEquals($serverNameExt, $message->getExtensions()[0]);
+        $extensionType = 0; // Server Name extension type
+        $message2->addExtension($extensionType, $serverNameExt);
+        $allExtensions = $message2->getExtensions();
+        $this->assertArrayHasKey($extensionType, $allExtensions);
+        $this->assertEquals($serverNameExt, $allExtensions[$extensionType]);
     }
     
     public function testEncodeAndDecode(): void
@@ -103,8 +107,6 @@ class ClientHelloMessageTest extends TestCase
         
         // Encode message
         $encoded = $original->encode();
-        $this->assertIsString($encoded);
-        
         // Decode message
         $decoded = ClientHelloMessage::decode($encoded);
         

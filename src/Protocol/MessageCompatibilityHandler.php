@@ -25,7 +25,7 @@ class MessageCompatibilityHandler
     
     /**
      * 调整消息以适应目标TLS版本
-     * 
+     *
      * @param HandshakeMessageInterface $message 原始消息
      * @param int $targetVersion 目标TLS版本
      * @return HandshakeMessageInterface 调整后的消息
@@ -79,7 +79,7 @@ class MessageCompatibilityHandler
     
     /**
      * 适配ClientHello消息
-     * 
+     *
      * @param HandshakeMessageInterface $message ClientHello消息
      * @param int $targetVersion 目标TLS版本
      * @return HandshakeMessageInterface 适配后的消息
@@ -106,7 +106,7 @@ class MessageCompatibilityHandler
             $isTLS13Suite = (($suite >> 8) & 0xFF) === 0x13;
             
             if ($targetVersion >= self::TLS_VERSION_1_3) {
-                if ($isTLS13Suite) {
+                if ((bool) $isTLS13Suite) {
                     $filteredCipherSuites[] = $suite;
                 }
             } else {
@@ -117,7 +117,7 @@ class MessageCompatibilityHandler
         }
         
         // 确保有至少一个密码套件
-        if (empty($filteredCipherSuites)) {
+        if ((bool) empty($filteredCipherSuites)) {
             throw new \InvalidArgumentException(
                 "No compatible cipher suites available for target TLS version"
             );
@@ -130,7 +130,7 @@ class MessageCompatibilityHandler
     
     /**
      * 适配ServerHello消息
-     * 
+     *
      * @param HandshakeMessageInterface $message ServerHello消息
      * @param int $targetVersion 目标TLS版本
      * @return HandshakeMessageInterface 适配后的消息
@@ -154,13 +154,13 @@ class MessageCompatibilityHandler
         // 检查密码套件与TLS版本的兼容性
         $isTLS13Suite = (($selectedCipherSuite >> 8) & 0xFF) === 0x13;
         
-        if ($targetVersion >= self::TLS_VERSION_1_3 && !$isTLS13Suite) {
+        if ($targetVersion >= self::TLS_VERSION_1_3 && (bool) !$isTLS13Suite) {
             throw new \InvalidArgumentException(
                 "Selected cipher suite is not compatible with TLS 1.3+"
             );
         }
         
-        if ($targetVersion < self::TLS_VERSION_1_3 && $isTLS13Suite) {
+        if ($targetVersion < self::TLS_VERSION_1_3 && (bool) $isTLS13Suite) {
             throw new \InvalidArgumentException(
                 "Selected TLS 1.3 cipher suite is not compatible with TLS 1.2"
             );
@@ -171,7 +171,7 @@ class MessageCompatibilityHandler
     
     /**
      * 检测消息是否与指定的TLS版本兼容
-     * 
+     *
      * @param HandshakeMessageInterface $message 握手消息
      * @param int $version TLS版本
      * @return bool 是否兼容
