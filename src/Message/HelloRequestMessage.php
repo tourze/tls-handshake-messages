@@ -6,7 +6,7 @@ use Tourze\TLSHandshakeMessages\Protocol\HandshakeMessageType;
 
 /**
  * HelloRequest 消息（仅限 TLS 1.2 及以下版本）
- * 
+ *
  * 服务器可以发送 HelloRequest 消息请求客户端重新进行握手
  */
 class HelloRequestMessage extends AbstractHandshakeMessage

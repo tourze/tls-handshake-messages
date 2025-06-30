@@ -2,6 +2,7 @@
 
 namespace Tourze\TLSHandshakeMessages\Message;
 
+use Tourze\TLSHandshakeMessages\Exception\InvalidMessageException;
 use Tourze\TLSHandshakeMessages\Protocol\HandshakeMessageType;
 
 /**
@@ -104,12 +105,12 @@ class ClientHelloMessage extends AbstractHandshakeMessage
      *
      * @param string $random 32字节随机数
      * @return self
-     * @throws \InvalidArgumentException 如果随机数长度不是32字节
+     * @throws InvalidMessageException 如果随机数长度不是32字节
      */
     public function setRandom(string $random): self
     {
         if (strlen($random) !== 32) {
-            throw new \InvalidArgumentException('Random data must be exactly 32 bytes');
+            throw new InvalidMessageException('Random data must be exactly 32 bytes');
         }
         
         $this->random = $random;
@@ -131,12 +132,12 @@ class ClientHelloMessage extends AbstractHandshakeMessage
      *
      * @param string $sessionId 会话ID
      * @return self
-     * @throws \InvalidArgumentException 如果会话ID长度超过32字节
+     * @throws InvalidMessageException 如果会话ID长度超过32字节
      */
     public function setSessionId(string $sessionId): self
     {
         if (strlen($sessionId) > 32) {
-            throw new \InvalidArgumentException('Session ID cannot exceed 32 bytes');
+            throw new InvalidMessageException('Session ID cannot exceed 32 bytes');
         }
         
         $this->sessionId = $sessionId;
@@ -280,7 +281,7 @@ class ClientHelloMessage extends AbstractHandshakeMessage
      *
      * @param string $data 二进制数据
      * @return static 解码后的消息对象
-     * @throws \InvalidArgumentException 如果数据格式无效
+     * @throws InvalidMessageException 如果数据格式无效
      */
     public static function decode(string $data): static
     {
@@ -291,7 +292,7 @@ class ClientHelloMessage extends AbstractHandshakeMessage
         // 验证消息类型
         $type = ord($data[$offset]);
         if ($type !== HandshakeMessageType::CLIENT_HELLO->value) {
-            throw new \InvalidArgumentException('Invalid message type');
+            throw new InvalidMessageException('Invalid message type');
         }
         $offset++;
         
@@ -300,7 +301,7 @@ class ClientHelloMessage extends AbstractHandshakeMessage
         $offset += 3;
         
         if (strlen($data) - $offset < $length) {
-            throw new \InvalidArgumentException('Incomplete message data');
+            throw new InvalidMessageException('Incomplete message data');
         }
         
         // 读取协议版本
@@ -322,7 +323,7 @@ class ClientHelloMessage extends AbstractHandshakeMessage
         $offset += 2;
         
         if ($cipherSuitesLength % 2 !== 0) {
-            throw new \InvalidArgumentException('Invalid cipher suites length');
+            throw new InvalidMessageException('Invalid cipher suites length');
         }
         
         $message->cipherSuites = [];

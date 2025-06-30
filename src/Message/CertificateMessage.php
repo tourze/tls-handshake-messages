@@ -2,6 +2,7 @@
 
 namespace Tourze\TLSHandshakeMessages\Message;
 
+use Tourze\TLSHandshakeMessages\Exception\InvalidMessageException;
 use Tourze\TLSHandshakeMessages\Protocol\HandshakeMessageType;
 
 /**
@@ -41,7 +42,7 @@ class CertificateMessage extends AbstractHandshakeMessage
     {
         foreach ($certificateChain as $cert) {
             if (!is_string($cert)) {
-                throw new \InvalidArgumentException('Certificate must be in DER format');
+                throw new InvalidMessageException('Certificate must be in DER format');
             }
         }
         
@@ -93,7 +94,7 @@ class CertificateMessage extends AbstractHandshakeMessage
      *
      * @param string $data 二进制数据
      * @return static 解码后的消息对象
-     * @throws \InvalidArgumentException 如果数据格式无效
+     * @throws InvalidMessageException 如果数据格式无效
      */
     public static function decode(string $data): static
     {
@@ -104,7 +105,7 @@ class CertificateMessage extends AbstractHandshakeMessage
         // 验证消息类型
         $type = ord($data[$offset]);
         if ($type !== HandshakeMessageType::CERTIFICATE->value) {
-            throw new \InvalidArgumentException('Invalid message type');
+            throw new InvalidMessageException('Invalid message type');
         }
         $offset++;
         
@@ -113,7 +114,7 @@ class CertificateMessage extends AbstractHandshakeMessage
         $offset += 3;
         
         if (strlen($data) - $offset < $length) {
-            throw new \InvalidArgumentException('Incomplete message data');
+            throw new InvalidMessageException('Incomplete message data');
         }
         
         // 读取证书链总长度
@@ -129,7 +130,7 @@ class CertificateMessage extends AbstractHandshakeMessage
             $offset += 3;
             
             if ($offset + $certLength > $endOffset) {
-                throw new \InvalidArgumentException('Invalid certificate length');
+                throw new InvalidMessageException('Invalid certificate length');
             }
             
             $cert = substr($data, $offset, $certLength);

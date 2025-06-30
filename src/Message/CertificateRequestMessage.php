@@ -2,6 +2,7 @@
 
 namespace Tourze\TLSHandshakeMessages\Message;
 
+use Tourze\TLSHandshakeMessages\Exception\InvalidMessageException;
 use Tourze\TLSHandshakeMessages\Protocol\HandshakeMessageType;
 
 /**
@@ -179,7 +180,7 @@ class CertificateRequestMessage extends AbstractHandshakeMessage
      *
      * @param string $data 二进制数据
      * @return static 解码后的消息对象
-     * @throws \InvalidArgumentException 如果数据格式无效
+     * @throws InvalidMessageException 如果数据格式无效
      */
     public static function decode(string $data): static
     {
@@ -190,7 +191,7 @@ class CertificateRequestMessage extends AbstractHandshakeMessage
         // 验证消息类型
         $type = ord($data[$offset]);
         if ($type !== HandshakeMessageType::CERTIFICATE_REQUEST->value) {
-            throw new \InvalidArgumentException('Invalid message type');
+            throw new InvalidMessageException('Invalid message type');
         }
         $offset++;
         
@@ -199,7 +200,7 @@ class CertificateRequestMessage extends AbstractHandshakeMessage
         $offset += 3;
         
         if (strlen($data) - $offset < $length) {
-            throw new \InvalidArgumentException('Incomplete message data');
+            throw new InvalidMessageException('Incomplete message data');
         }
         
         // 读取证书类型数量

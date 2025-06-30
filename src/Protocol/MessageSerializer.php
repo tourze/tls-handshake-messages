@@ -2,6 +2,7 @@
 
 namespace Tourze\TLSHandshakeMessages\Protocol;
 
+use Tourze\TLSHandshakeMessages\Exception\InvalidMessageException;
 use Tourze\TLSHandshakeMessages\Message\HandshakeMessageInterface;
 
 /**
@@ -222,18 +223,48 @@ class MessageSerializer
      * @param string $data 二进制数据
      * @param string $messageClass 消息类名
      * @return HandshakeMessageInterface 解码后的消息对象
-     * @throws \InvalidArgumentException 如果类名无效
+     * @throws InvalidMessageException 如果类名无效
      */
     public static function efficientDecode(string $data, string $messageClass): HandshakeMessageInterface
     {
         if (!class_exists($messageClass)) {
-            throw new \InvalidArgumentException("Invalid message class: {$messageClass}");
+            throw new InvalidMessageException("Invalid message class: {$messageClass}");
         }
         
         if (!is_subclass_of($messageClass, HandshakeMessageInterface::class)) {
-            throw new \InvalidArgumentException("Class {$messageClass} does not implement HandshakeMessageInterface");
+            throw new InvalidMessageException("Class {$messageClass} does not implement HandshakeMessageInterface");
         }
         
         return $messageClass::decode($data);
+    }
+    
+    /**
+     * 设置缓存大小限制
+     *
+     * @param int $limit 缓存大小限制（字节）
+     * @return void
+     */
+    public static function setCacheSizeLimit(int $limit): void
+    {
+        self::$cacheSizeLimit = $limit;
+        
+        // 如果当前缓存超过限制，清理缓存
+        if (self::$currentCacheSize > $limit) {
+            self::clearCache();
+        }
+    }
+    
+    /**
+     * 获取统计信息
+     *
+     * @return array{cached_messages: int, cache_size: int, cache_size_limit: int}
+     */
+    public static function getStatistics(): array
+    {
+        return [
+            'cached_messages' => count(self::$messageCache),
+            'cache_size' => self::$currentCacheSize,
+            'cache_size_limit' => self::$cacheSizeLimit,
+        ];
     }
 } 

@@ -2,6 +2,7 @@
 
 namespace Tourze\TLSHandshakeMessages\Message;
 
+use Tourze\TLSHandshakeMessages\Exception\InvalidMessageException;
 use Tourze\TLSHandshakeMessages\Protocol\HandshakeMessageType;
 
 /**
@@ -103,14 +104,14 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     /**
      * 设置随机数
      *
-     * @param string $random 32字节随机数
+     * @param string $random 随机数
      * @return self
-     * @throws \InvalidArgumentException 如果随机数长度不是32字节
+     * @throws InvalidMessageException 如果随机数长度不正确
      */
     public function setRandom(string $random): self
     {
         if (strlen($random) !== 32) {
-            throw new \InvalidArgumentException('Random data must be exactly 32 bytes');
+            throw new InvalidMessageException('Random must be exactly 32 bytes');
         }
         
         $this->random = $random;
@@ -132,12 +133,12 @@ class ServerHelloMessage extends AbstractHandshakeMessage
      *
      * @param string $sessionId 会话ID
      * @return self
-     * @throws \InvalidArgumentException 如果会话ID长度超过32字节
+     * @throws InvalidMessageException 如果会话ID太长
      */
     public function setSessionId(string $sessionId): self
     {
         if (strlen($sessionId) > 32) {
-            throw new \InvalidArgumentException('Session ID cannot exceed 32 bytes');
+            throw new InvalidMessageException('Session ID must be 0-32 bytes');
         }
         
         $this->sessionId = $sessionId;
@@ -145,7 +146,7 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     }
     
     /**
-     * 获取选择的加密套件
+     * 获取加密套件
      *
      * @return int 加密套件
      */
@@ -155,7 +156,7 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     }
     
     /**
-     * 设置选择的加密套件
+     * 设置加密套件
      *
      * @param int $cipherSuite 加密套件
      * @return self
@@ -167,7 +168,7 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     }
     
     /**
-     * 获取选择的压缩方法
+     * 获取压缩方法
      *
      * @return int 压缩方法
      */
@@ -177,7 +178,7 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     }
     
     /**
-     * 设置选择的压缩方法
+     * 设置压缩方法
      *
      * @param int $compressionMethod 压缩方法
      * @return self
@@ -265,7 +266,7 @@ class ServerHelloMessage extends AbstractHandshakeMessage
      *
      * @param string $data 二进制数据
      * @return static 解码后的消息对象
-     * @throws \InvalidArgumentException 如果数据格式无效
+     * @throws InvalidMessageException 如果数据格式无效
      */
     public static function decode(string $data): static
     {
@@ -276,7 +277,7 @@ class ServerHelloMessage extends AbstractHandshakeMessage
         // 验证消息类型
         $type = ord($data[$offset]);
         if ($type !== HandshakeMessageType::SERVER_HELLO->value) {
-            throw new \InvalidArgumentException('Invalid message type');
+            throw new InvalidMessageException('Invalid message type');
         }
         $offset++;
         
@@ -285,7 +286,7 @@ class ServerHelloMessage extends AbstractHandshakeMessage
         $offset += 3;
         
         if (strlen($data) - $offset < $length) {
-            throw new \InvalidArgumentException('Incomplete message data');
+            throw new InvalidMessageException('Incomplete message data');
         }
         
         // 读取协议版本
@@ -373,4 +374,4 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     {
         return self::MESSAGE_TYPE;
     }
-} 
+}

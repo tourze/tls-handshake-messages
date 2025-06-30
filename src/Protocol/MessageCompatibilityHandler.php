@@ -2,13 +2,14 @@
 
 namespace Tourze\TLSHandshakeMessages\Protocol;
 
+use Tourze\TLSHandshakeMessages\Exception\InvalidMessageException;
 use Tourze\TLSHandshakeMessages\Message\ClientHelloMessage;
 use Tourze\TLSHandshakeMessages\Message\HandshakeMessageInterface;
 use Tourze\TLSHandshakeMessages\Message\ServerHelloMessage;
 
 /**
  * TLS消息版本兼容性处理工具类
- * 
+ *
  * 用于处理TLS 1.2和TLS 1.3之间的消息格式差异和兼容性问题
  */
 class MessageCompatibilityHandler
@@ -53,7 +54,7 @@ class MessageCompatibilityHandler
             HandshakeMessageType::NEW_SESSION_TICKET
         ])) {
             if ($targetVersion < self::TLS_VERSION_1_3) {
-                throw new \InvalidArgumentException(sprintf(
+                throw new InvalidMessageException(sprintf(
                     "Message type %s is only available in TLS 1.3+",
                     $messageType->getName()
                 ));
@@ -67,7 +68,7 @@ class MessageCompatibilityHandler
             HandshakeMessageType::SERVER_HELLO_DONE
         ])) {
             if ($targetVersion >= self::TLS_VERSION_1_3) {
-                throw new \InvalidArgumentException(sprintf(
+                throw new InvalidMessageException(sprintf(
                     "Message type %s is not available in TLS 1.3+",
                     $messageType->getName()
                 ));
@@ -89,7 +90,7 @@ class MessageCompatibilityHandler
         int $targetVersion
     ): HandshakeMessageInterface {
         if (!($message instanceof ClientHelloMessage)) {
-            throw new \InvalidArgumentException("Expected ClientHelloMessage instance");
+            throw new InvalidMessageException("Expected ClientHelloMessage instance");
         }
         
         $clientHello = clone $message;
@@ -118,7 +119,7 @@ class MessageCompatibilityHandler
         
         // 确保有至少一个密码套件
         if ((bool) empty($filteredCipherSuites)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidMessageException(
                 "No compatible cipher suites available for target TLS version"
             );
         }
@@ -140,7 +141,7 @@ class MessageCompatibilityHandler
         int $targetVersion
     ): HandshakeMessageInterface {
         if (!($message instanceof ServerHelloMessage)) {
-            throw new \InvalidArgumentException("Expected ServerHelloMessage instance");
+            throw new InvalidMessageException("Expected ServerHelloMessage instance");
         }
         
         $serverHello = clone $message;
@@ -155,13 +156,13 @@ class MessageCompatibilityHandler
         $isTLS13Suite = (($selectedCipherSuite >> 8) & 0xFF) === 0x13;
         
         if ($targetVersion >= self::TLS_VERSION_1_3 && (bool) !$isTLS13Suite) {
-            throw new \InvalidArgumentException(
+            throw new InvalidMessageException(
                 "Selected cipher suite is not compatible with TLS 1.3+"
             );
         }
         
         if ($targetVersion < self::TLS_VERSION_1_3 && (bool) $isTLS13Suite) {
-            throw new \InvalidArgumentException(
+            throw new InvalidMessageException(
                 "Selected TLS 1.3 cipher suite is not compatible with TLS 1.2"
             );
         }
