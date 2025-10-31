@@ -1,16 +1,18 @@
 {
   "name": "tourze/tls-handshake-messages",
-  "description": "",
+  "description": "Comprehensive PHP library for handling TLS handshake protocol messages with serialization, deserialization, and validation capabilities",
   "type": "library",
   "license": "MIT",
   "require": {
-    "php": "^8.1",
     "tourze/enum-extra": "0.1.*",
     "tourze/tls-common": "0.0.*"
   },
   "require-dev": {
     "phpstan/phpstan": "^2.1",
-    "phpunit/phpunit": "^10.0"
+    "phpunit/phpunit": "^11.5",
+    "tourze/phpunit-base": "1.*",
+    "tourze/phpunit-enum": "0.0.*",
+    "tourze/symfony-testing-framework": "0.0.*"
   },
   "autoload": {
     "psr-4": {
@@ -22,4 +24,4 @@
       "Tourze\\TLSHandshakeMessages\\Tests\\": "tests/"
     }
   }
-} 
+}

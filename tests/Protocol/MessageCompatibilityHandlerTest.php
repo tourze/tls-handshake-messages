@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tourze\TLSHandshakeMessages\Tests\Protocol;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tourze\TLSHandshakeMessages\Message\ClientHelloMessage;
 use Tourze\TLSHandshakeMessages\Message\EncryptedExtensionsMessage;
@@ -11,8 +14,11 @@ use Tourze\TLSHandshakeMessages\Protocol\MessageCompatibilityHandler;
 
 /**
  * MessageCompatibilityHandler单元测试
+ *
+ * @internal
  */
-class MessageCompatibilityHandlerTest extends TestCase
+#[CoversClass(MessageCompatibilityHandler::class)]
+final class MessageCompatibilityHandlerTest extends TestCase
 {
     /**
      * 测试消息版本兼容性检测
@@ -52,8 +58,8 @@ class MessageCompatibilityHandlerTest extends TestCase
         $clientHello->setCipherSuites([
             0x1301, // TLS_AES_128_GCM_SHA256 (TLS 1.3)
             0x1302, // TLS_AES_256_GCM_SHA384 (TLS 1.3)
-            0xc02f, // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (TLS 1.2)
-            0xc030  // TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (TLS 1.2)
+            0xC02F, // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (TLS 1.2)
+            0xC030,  // TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (TLS 1.2)
         ]);
 
         // 适配到TLS 1.3版本
@@ -66,10 +72,10 @@ class MessageCompatibilityHandlerTest extends TestCase
         $this->assertInstanceOf(ClientHelloMessage::class, $tlsV13ClientHello);
         $tlsV13CipherSuites = $tlsV13ClientHello->getCipherSuites();
         $this->assertCount(2, $tlsV13CipherSuites);
-        $this->assertTrue(in_array(0x1301, $tlsV13CipherSuites));
-        $this->assertTrue(in_array(0x1302, $tlsV13CipherSuites));
-        $this->assertFalse(in_array(0xc02f, $tlsV13CipherSuites));
-        $this->assertFalse(in_array(0xc030, $tlsV13CipherSuites));
+        $this->assertContains(0x1301, $tlsV13CipherSuites);
+        $this->assertContains(0x1302, $tlsV13CipherSuites);
+        $this->assertFalse(in_array(0xC02F, $tlsV13CipherSuites, true));
+        $this->assertFalse(in_array(0xC030, $tlsV13CipherSuites, true));
 
         // 适配到TLS 1.2版本
         $tlsV12ClientHello = MessageCompatibilityHandler::adaptMessageToVersion(
@@ -81,10 +87,10 @@ class MessageCompatibilityHandlerTest extends TestCase
         $this->assertInstanceOf(ClientHelloMessage::class, $tlsV12ClientHello);
         $tlsV12CipherSuites = $tlsV12ClientHello->getCipherSuites();
         $this->assertCount(2, $tlsV12CipherSuites);
-        $this->assertFalse(in_array(0x1301, $tlsV12CipherSuites));
-        $this->assertFalse(in_array(0x1302, $tlsV12CipherSuites));
-        $this->assertTrue(in_array(0xc02f, $tlsV12CipherSuites));
-        $this->assertTrue(in_array(0xc030, $tlsV12CipherSuites));
+        $this->assertFalse(in_array(0x1301, $tlsV12CipherSuites, true));
+        $this->assertFalse(in_array(0x1302, $tlsV12CipherSuites, true));
+        $this->assertContains(0xC02F, $tlsV12CipherSuites);
+        $this->assertContains(0xC030, $tlsV12CipherSuites);
     }
 
     /**
@@ -96,12 +102,12 @@ class MessageCompatibilityHandlerTest extends TestCase
         $clientHello = new ClientHelloMessage();
         $clientHello->setCipherSuites([
             0x1301, // TLS_AES_128_GCM_SHA256 (TLS 1.3)
-            0x1302  // TLS_AES_256_GCM_SHA384 (TLS 1.3)
+            0x1302,  // TLS_AES_256_GCM_SHA384 (TLS 1.3)
         ]);
 
         // 尝试适配到TLS 1.2版本，应抛出异常
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("No compatible cipher suites available for target TLS version");
+        $this->expectExceptionMessage('No compatible cipher suites available for target TLS version');
         MessageCompatibilityHandler::adaptMessageToVersion(
             $clientHello,
             MessageCompatibilityHandler::TLS_VERSION_1_2
@@ -118,7 +124,7 @@ class MessageCompatibilityHandlerTest extends TestCase
 
         // 尝试适配到TLS 1.2版本，应抛出异常
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("Message type ENCRYPTED_EXTENSIONS is only available in TLS 1.3+");
+        $this->expectExceptionMessage('Message type ENCRYPTED_EXTENSIONS is only available in TLS 1.3+');
         MessageCompatibilityHandler::adaptMessageToVersion(
             $encryptedExtensions,
             MessageCompatibilityHandler::TLS_VERSION_1_2
@@ -144,7 +150,7 @@ class MessageCompatibilityHandlerTest extends TestCase
 
         // 尝试适配到TLS 1.2，应抛出异常
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("Selected TLS 1.3 cipher suite is not compatible with TLS 1.2");
+        $this->expectExceptionMessage('Selected TLS 1.3 cipher suite is not compatible with TLS 1.2');
         MessageCompatibilityHandler::adaptMessageToVersion(
             $serverHello,
             MessageCompatibilityHandler::TLS_VERSION_1_2

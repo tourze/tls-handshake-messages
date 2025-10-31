@@ -1,15 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tourze\TLSHandshakeMessages\Tests\Message;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tourze\TLSHandshakeMessages\Message\CertificateMessage;
 use Tourze\TLSHandshakeMessages\Protocol\HandshakeMessageType;
 
 /**
  * Certificate消息测试类
+ *
+ * @internal
  */
-class CertificateMessageTest extends TestCase
+#[CoversClass(CertificateMessage::class)]
+final class CertificateMessageTest extends TestCase
 {
     /**
      * 测试消息类型是否正确
@@ -67,7 +73,7 @@ class CertificateMessageTest extends TestCase
         $decodedMessage = CertificateMessage::decode($encodedData);
 
         // 比较原始消息和解码后的消息
-        $this->assertEquals(count($originalMessage->getCertificateChain()), count($decodedMessage->getCertificateChain()));
+        $this->assertCount(count($originalMessage->getCertificateChain()), $decodedMessage->getCertificateChain());
         $this->assertEquals($originalMessage->getCertificateChain(), $decodedMessage->getCertificateChain());
     }
 
@@ -96,5 +102,41 @@ class CertificateMessageTest extends TestCase
         // 创建一个包含证书长度但实际数据长度不够的二进制数据
         $data = "\x00\x00\x03too"; // 声明长度3但实际没有足够的数据
         CertificateMessage::decode($data);
+    }
+
+    /**
+     * 测试 addCertificate 方法
+     */
+    public function testAddCertificate(): void
+    {
+        $message = new CertificateMessage();
+
+        // 测试默认状态
+        $this->assertEmpty($message->getCertificateChain());
+
+        // 测试添加第一个证书
+        $cert1 = str_repeat('A', 50);
+        $result = $message->addCertificate($cert1);
+
+        // 测试返回值（链式调用）
+        $this->assertSame($message, $result);
+
+        // 测试证书是否被添加
+        $this->assertCount(1, $message->getCertificateChain());
+        $this->assertEquals([$cert1], $message->getCertificateChain());
+
+        // 测试添加第二个证书
+        $cert2 = str_repeat('B', 60);
+        $message->addCertificate($cert2);
+
+        $this->assertCount(2, $message->getCertificateChain());
+        $this->assertEquals([$cert1, $cert2], $message->getCertificateChain());
+
+        // 测试添加空证书
+        $message->addCertificate('');
+        $this->assertCount(3, $message->getCertificateChain());
+
+        // 消息因为空证书而变得无效
+        $this->assertFalse($message->isValid());
     }
 }

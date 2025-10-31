@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tourze\TLSHandshakeMessages\Message;
 
 use Tourze\TLSHandshakeMessages\Exception\InvalidMessageException;
@@ -14,49 +16,39 @@ class ServerHelloMessage extends AbstractHandshakeMessage
      * 消息类型
      */
     public const MESSAGE_TYPE = HandshakeMessageType::SERVER_HELLO;
-    
+
     /**
      * TLS版本
-     *
-     * @var int
      */
     private int $version;
-    
+
     /**
      * 32字节随机数
-     *
-     * @var string
      */
     private string $random;
-    
+
     /**
      * 会话ID
-     *
-     * @var string
      */
     private string $sessionId;
-    
+
     /**
      * 选择的加密套件
-     *
-     * @var int
      */
     private int $cipherSuite;
-    
+
     /**
      * 选择的压缩方法
-     *
-     * @var int
      */
     private int $compressionMethod;
-    
+
     /**
      * 扩展列表
      *
      * @var array<int, string>
      */
     private array $extensions = [];
-    
+
     /**
      * 构造函数
      */
@@ -68,7 +60,7 @@ class ServerHelloMessage extends AbstractHandshakeMessage
         $this->cipherSuite = 0;
         $this->compressionMethod = 0; // null compression
     }
-    
+
     /**
      * 获取TLS版本
      *
@@ -78,19 +70,17 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     {
         return $this->version;
     }
-    
+
     /**
      * 设置TLS版本
      *
      * @param int $version TLS版本
-     * @return self
      */
-    public function setVersion(int $version): self
+    public function setVersion(int $version): void
     {
         $this->version = $version;
-        return $this;
     }
-    
+
     /**
      * 获取随机数
      *
@@ -100,24 +90,23 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     {
         return $this->random;
     }
-    
+
     /**
      * 设置随机数
      *
      * @param string $random 随机数
-     * @return self
+     *
      * @throws InvalidMessageException 如果随机数长度不正确
      */
-    public function setRandom(string $random): self
+    public function setRandom(string $random): void
     {
-        if (strlen($random) !== 32) {
+        if (32 !== strlen($random)) {
             throw new InvalidMessageException('Random must be exactly 32 bytes');
         }
-        
+
         $this->random = $random;
-        return $this;
     }
-    
+
     /**
      * 获取会话ID
      *
@@ -127,24 +116,23 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     {
         return $this->sessionId;
     }
-    
+
     /**
      * 设置会话ID
      *
      * @param string $sessionId 会话ID
-     * @return self
+     *
      * @throws InvalidMessageException 如果会话ID太长
      */
-    public function setSessionId(string $sessionId): self
+    public function setSessionId(string $sessionId): void
     {
         if (strlen($sessionId) > 32) {
             throw new InvalidMessageException('Session ID must be 0-32 bytes');
         }
-        
+
         $this->sessionId = $sessionId;
-        return $this;
     }
-    
+
     /**
      * 获取加密套件
      *
@@ -154,19 +142,17 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     {
         return $this->cipherSuite;
     }
-    
+
     /**
      * 设置加密套件
      *
      * @param int $cipherSuite 加密套件
-     * @return self
      */
-    public function setCipherSuite(int $cipherSuite): self
+    public function setCipherSuite(int $cipherSuite): void
     {
         $this->cipherSuite = $cipherSuite;
-        return $this;
     }
-    
+
     /**
      * 获取压缩方法
      *
@@ -176,19 +162,17 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     {
         return $this->compressionMethod;
     }
-    
+
     /**
      * 设置压缩方法
      *
      * @param int $compressionMethod 压缩方法
-     * @return self
      */
-    public function setCompressionMethod(int $compressionMethod): self
+    public function setCompressionMethod(int $compressionMethod): void
     {
         $this->compressionMethod = $compressionMethod;
-        return $this;
     }
-    
+
     /**
      * 获取扩展列表
      *
@@ -198,32 +182,30 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     {
         return $this->extensions;
     }
-    
+
     /**
      * 设置扩展列表
      *
      * @param array<int, string> $extensions 扩展列表
-     * @return self
      */
-    public function setExtensions(array $extensions): self
+    public function setExtensions(array $extensions): void
     {
         $this->extensions = $extensions;
-        return $this;
     }
-    
+
     /**
      * 添加扩展
      *
-     * @param int $type 扩展类型
+     * @param int    $type 扩展类型
      * @param string $data 扩展数据
-     * @return self
      */
     public function addExtension(int $type, string $data): self
     {
         $this->extensions[$type] = $data;
+
         return $this;
     }
-    
+
     /**
      * 编码消息
      *
@@ -233,7 +215,7 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     {
         // 编码扩展
         $extensionsData = '';
-        if (!empty($this->extensions)) {
+        if ([] !== $this->extensions) {
             foreach ($this->extensions as $type => $data) {
                 $extensionsData .= $this->encodeUint16($type);
                 $extensionsData .= $this->encodeUint16(strlen($data));
@@ -241,100 +223,102 @@ class ServerHelloMessage extends AbstractHandshakeMessage
             }
             $extensionsData = $this->encodeUint16(strlen($extensionsData)) . $extensionsData;
         }
-        
+
         // 构造消息体
         $body = $this->encodeUint16($this->version);
         $body .= $this->random;
         $body .= pack('C', strlen($this->sessionId)) . $this->sessionId;
         $body .= $this->encodeUint16($this->cipherSuite);
         $body .= pack('C', $this->compressionMethod);
-        
-        if (!empty($extensionsData)) {
+
+        if ('' !== $extensionsData) {
             $body .= $extensionsData;
         }
-        
+
         // 构造完整消息
         $message = pack('C', HandshakeMessageType::SERVER_HELLO->value);
         $message .= $this->encodeUint24(strlen($body));
         $message .= $body;
-        
+
         return $message;
     }
-    
+
     /**
      * 解码消息
      *
      * @param string $data 二进制数据
+     *
      * @return static 解码后的消息对象
+     *
      * @throws InvalidMessageException 如果数据格式无效
      */
     public static function decode(string $data): static
     {
-        $message = new static();
-        
+        $message = new static(); // @phpstan-ignore-line
+
         $offset = 0;
-        
+
         // 验证消息类型
         $type = ord($data[$offset]);
         if ($type !== HandshakeMessageType::SERVER_HELLO->value) {
             throw new InvalidMessageException('Invalid message type');
         }
-        $offset++;
-        
+        ++$offset;
+
         // 读取消息长度
         $length = (ord($data[$offset]) << 16) | (ord($data[$offset + 1]) << 8) | ord($data[$offset + 2]);
         $offset += 3;
-        
+
         if (strlen($data) - $offset < $length) {
             throw new InvalidMessageException('Incomplete message data');
         }
-        
+
         // 读取协议版本
         $message->version = self::decodeUint16($data, $offset);
         $offset += 2;
-        
+
         // 读取随机数
         $message->random = substr($data, $offset, 32);
         $offset += 32;
-        
+
         // 读取会话ID
         $sessionIdLength = ord($data[$offset]);
-        $offset++;
+        ++$offset;
         $message->sessionId = substr($data, $offset, $sessionIdLength);
         $offset += $sessionIdLength;
-        
+
         // 读取加密套件
         $message->cipherSuite = self::decodeUint16($data, $offset);
         $offset += 2;
-        
+
         // 读取压缩方法
         $message->compressionMethod = ord($data[$offset]);
-        $offset++;
-        
+        ++$offset;
+
         // 如果还有剩余数据，读取扩展
         if ($offset < strlen($data)) {
             $extensionsLength = self::decodeUint16($data, $offset);
             $offset += 2;
             $extensionsEnd = $offset + $extensionsLength;
-            
+
             $message->extensions = [];
             while ($offset < $extensionsEnd) {
                 $extType = self::decodeUint16($data, $offset);
                 $offset += 2;
-                
+
                 $extLength = self::decodeUint16($data, $offset);
                 $offset += 2;
-                
+
                 $extData = substr($data, $offset, $extLength);
                 $offset += $extLength;
-                
+
                 $message->extensions[$extType] = $extData;
             }
         }
-        
+
         return $message;
     }
-    
+
     /**
      * 验证消息是否有效
      *
@@ -343,21 +327,22 @@ class ServerHelloMessage extends AbstractHandshakeMessage
     public function isValid(): bool
     {
         // 最基本的验证
-        if (strlen($this->random) !== 32) {
+        if (32 !== strlen($this->random)) {
             return false;
         }
-        
+
         if (strlen($this->sessionId) > 32) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     /**
      * 编码24位无符号整数
      *
      * @param int $value 整数值
+     *
      * @return string 编码后的二进制数据
      */
     protected function encodeUint24(int $value): string
