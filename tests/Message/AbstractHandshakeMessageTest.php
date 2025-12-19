@@ -6,6 +6,7 @@ namespace Tourze\TLSHandshakeMessages\Tests\Message;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 use Tourze\TLSHandshakeMessages\Message\AbstractHandshakeMessage;
 use Tourze\TLSHandshakeMessages\Protocol\HandshakeMessageType;
 
@@ -44,38 +45,29 @@ final class AbstractHandshakeMessageTest extends TestCase
 
                 return $instance;
             }
-
-            // 公开protected方法用于测试
-            public function publicEncodeUint8(int $value): string
-            {
-                return $this->encodeUint8($value);
-            }
-
-            public function publicEncodeUint16(int $value): string
-            {
-                return $this->encodeUint16($value);
-            }
-
-            public function publicEncodeUint32(int $value): string
-            {
-                return $this->encodeUint32($value);
-            }
-
-            public static function publicDecodeUint8(string $data, int $offset = 0): int
-            {
-                return self::decodeUint8($data, $offset);
-            }
-
-            public static function publicDecodeUint16(string $data, int $offset = 0): int
-            {
-                return self::decodeUint16($data, $offset);
-            }
-
-            public static function publicDecodeUint32(string $data, int $offset = 0): int
-            {
-                return self::decodeUint32($data, $offset);
-            }
         };
+    }
+
+    /**
+     * 使用反射调用 protected 方法
+     */
+    private function invokeProtectedMethod(string $methodName, mixed ...$args): mixed
+    {
+        $reflection = new ReflectionMethod($this->message, $methodName);
+        $reflection->setAccessible(true);
+
+        return $reflection->invoke($this->message, ...$args);
+    }
+
+    /**
+     * 使用反射调用 protected static 方法
+     */
+    private function invokeProtectedStaticMethod(string $methodName, mixed ...$args): mixed
+    {
+        $reflection = new ReflectionMethod(AbstractHandshakeMessage::class, $methodName);
+        $reflection->setAccessible(true);
+
+        return $reflection->invoke(null, ...$args);
     }
 
     /**
@@ -99,12 +91,9 @@ final class AbstractHandshakeMessageTest extends TestCase
      */
     public function testEncodeUint8(): void
     {
-        // @phpstan-ignore-next-line - Anonymous class method access
-        $this->assertEquals(pack('C', 0), $this->message->publicEncodeUint8(0));
-        // @phpstan-ignore-next-line - Anonymous class method access
-        $this->assertEquals(pack('C', 127), $this->message->publicEncodeUint8(127));
-        // @phpstan-ignore-next-line - Anonymous class method access
-        $this->assertEquals(pack('C', 255), $this->message->publicEncodeUint8(255));
+        $this->assertEquals(pack('C', 0), $this->invokeProtectedMethod('encodeUint8', 0));
+        $this->assertEquals(pack('C', 127), $this->invokeProtectedMethod('encodeUint8', 127));
+        $this->assertEquals(pack('C', 255), $this->invokeProtectedMethod('encodeUint8', 255));
     }
 
     /**
@@ -112,12 +101,9 @@ final class AbstractHandshakeMessageTest extends TestCase
      */
     public function testEncodeUint16(): void
     {
-        // @phpstan-ignore-next-line - Anonymous class method access
-        $this->assertEquals(pack('n', 0), $this->message->publicEncodeUint16(0));
-        // @phpstan-ignore-next-line - Anonymous class method access
-        $this->assertEquals(pack('n', 256), $this->message->publicEncodeUint16(256));
-        // @phpstan-ignore-next-line - Anonymous class method access
-        $this->assertEquals(pack('n', 65535), $this->message->publicEncodeUint16(65535));
+        $this->assertEquals(pack('n', 0), $this->invokeProtectedMethod('encodeUint16', 0));
+        $this->assertEquals(pack('n', 256), $this->invokeProtectedMethod('encodeUint16', 256));
+        $this->assertEquals(pack('n', 65535), $this->invokeProtectedMethod('encodeUint16', 65535));
     }
 
     /**
@@ -125,12 +111,9 @@ final class AbstractHandshakeMessageTest extends TestCase
      */
     public function testEncodeUint32(): void
     {
-        // @phpstan-ignore-next-line - Anonymous class method access
-        $this->assertEquals(pack('N', 0), $this->message->publicEncodeUint32(0));
-        // @phpstan-ignore-next-line - Anonymous class method access
-        $this->assertEquals(pack('N', 65536), $this->message->publicEncodeUint32(65536));
-        // @phpstan-ignore-next-line - Anonymous class method access
-        $this->assertEquals(pack('N', 4294967295), $this->message->publicEncodeUint32(4294967295));
+        $this->assertEquals(pack('N', 0), $this->invokeProtectedMethod('encodeUint32', 0));
+        $this->assertEquals(pack('N', 65536), $this->invokeProtectedMethod('encodeUint32', 65536));
+        $this->assertEquals(pack('N', 4294967295), $this->invokeProtectedMethod('encodeUint32', 4294967295));
     }
 
     /**
@@ -138,15 +121,14 @@ final class AbstractHandshakeMessageTest extends TestCase
      */
     public function testDecodeUint8(): void
     {
-        $messageClass = $this->message::class;
-        $this->assertEquals(0, $messageClass::publicDecodeUint8(pack('C', 0)));
-        $this->assertEquals(127, $messageClass::publicDecodeUint8(pack('C', 127)));
-        $this->assertEquals(255, $messageClass::publicDecodeUint8(pack('C', 255)));
+        $this->assertEquals(0, $this->invokeProtectedStaticMethod('decodeUint8', pack('C', 0)));
+        $this->assertEquals(127, $this->invokeProtectedStaticMethod('decodeUint8', pack('C', 127)));
+        $this->assertEquals(255, $this->invokeProtectedStaticMethod('decodeUint8', pack('C', 255)));
 
         // 测试带偏移量
         $data = pack('C*', 10, 20, 30);
-        $this->assertEquals(20, $messageClass::publicDecodeUint8($data, 1));
-        $this->assertEquals(30, $messageClass::publicDecodeUint8($data, 2));
+        $this->assertEquals(20, $this->invokeProtectedStaticMethod('decodeUint8', $data, 1));
+        $this->assertEquals(30, $this->invokeProtectedStaticMethod('decodeUint8', $data, 2));
     }
 
     /**
@@ -154,15 +136,14 @@ final class AbstractHandshakeMessageTest extends TestCase
      */
     public function testDecodeUint16(): void
     {
-        $messageClass = $this->message::class;
-        $this->assertEquals(0, $messageClass::publicDecodeUint16(pack('n', 0)));
-        $this->assertEquals(256, $messageClass::publicDecodeUint16(pack('n', 256)));
-        $this->assertEquals(65535, $messageClass::publicDecodeUint16(pack('n', 65535)));
+        $this->assertEquals(0, $this->invokeProtectedStaticMethod('decodeUint16', pack('n', 0)));
+        $this->assertEquals(256, $this->invokeProtectedStaticMethod('decodeUint16', pack('n', 256)));
+        $this->assertEquals(65535, $this->invokeProtectedStaticMethod('decodeUint16', pack('n', 65535)));
 
         // 测试带偏移量
         $data = pack('n*', 100, 200, 300);
-        $this->assertEquals(200, $messageClass::publicDecodeUint16($data, 2));
-        $this->assertEquals(300, $messageClass::publicDecodeUint16($data, 4));
+        $this->assertEquals(200, $this->invokeProtectedStaticMethod('decodeUint16', $data, 2));
+        $this->assertEquals(300, $this->invokeProtectedStaticMethod('decodeUint16', $data, 4));
     }
 
     /**
@@ -170,14 +151,13 @@ final class AbstractHandshakeMessageTest extends TestCase
      */
     public function testDecodeUint32(): void
     {
-        $messageClass = $this->message::class;
-        $this->assertEquals(0, $messageClass::publicDecodeUint32(pack('N', 0)));
-        $this->assertEquals(65536, $messageClass::publicDecodeUint32(pack('N', 65536)));
-        $this->assertEquals(4294967295, $messageClass::publicDecodeUint32(pack('N', 4294967295)));
+        $this->assertEquals(0, $this->invokeProtectedStaticMethod('decodeUint32', pack('N', 0)));
+        $this->assertEquals(65536, $this->invokeProtectedStaticMethod('decodeUint32', pack('N', 65536)));
+        $this->assertEquals(4294967295, $this->invokeProtectedStaticMethod('decodeUint32', pack('N', 4294967295)));
 
         // 测试带偏移量
         $data = pack('N*', 100000, 200000, 300000);
-        $this->assertEquals(200000, $messageClass::publicDecodeUint32($data, 4));
-        $this->assertEquals(300000, $messageClass::publicDecodeUint32($data, 8));
+        $this->assertEquals(200000, $this->invokeProtectedStaticMethod('decodeUint32', $data, 4));
+        $this->assertEquals(300000, $this->invokeProtectedStaticMethod('decodeUint32', $data, 8));
     }
 }

@@ -10,7 +10,7 @@ use Tourze\TLSHandshakeMessages\Protocol\HandshakeMessageType;
 /**
  * 证书验证消息
  */
-class CertificateVerifyMessage extends AbstractHandshakeMessage
+final class CertificateVerifyMessage extends AbstractHandshakeMessage
 {
     /**
      * 消息类型
@@ -98,7 +98,7 @@ class CertificateVerifyMessage extends AbstractHandshakeMessage
      */
     public static function decode(string $data): static
     {
-        $message = new static(); // @phpstan-ignore-line
+        $message = new static();
 
         $offset = 0;
 

@@ -12,7 +12,7 @@ use Tourze\TLSHandshakeMessages\Protocol\HandshakeMessageType;
  *
  * 服务器可以发送 HelloRequest 消息请求客户端重新进行握手
  */
-class HelloRequestMessage extends AbstractHandshakeMessage
+final class HelloRequestMessage extends AbstractHandshakeMessage
 {
     /**
      * 消息类型
@@ -40,7 +40,7 @@ class HelloRequestMessage extends AbstractHandshakeMessage
     public static function decode(string $data): static
     {
         // 根据测试要求，允许空字符串作为输入
-        return new static(); // @phpstan-ignore-line
+        return new static();
     }
 
     /**

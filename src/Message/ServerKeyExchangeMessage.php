@@ -10,7 +10,7 @@ use Tourze\TLSHandshakeMessages\Protocol\HandshakeMessageType;
 /**
  * 服务器密钥交换消息
  */
-class ServerKeyExchangeMessage extends AbstractHandshakeMessage
+final class ServerKeyExchangeMessage extends AbstractHandshakeMessage
 {
     /**
      * 消息类型
@@ -128,7 +128,7 @@ class ServerKeyExchangeMessage extends AbstractHandshakeMessage
      */
     public static function decode(string $data): static
     {
-        $message = new static(); // @phpstan-ignore-line
+        $message = new static();
 
         $offset = 0;
 

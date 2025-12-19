@@ -10,7 +10,7 @@ use Tourze\TLSHandshakeMessages\Protocol\HandshakeMessageType;
 /**
  * 服务器Hello完成消息（仅限TLS 1.2及以下）
  */
-class ServerHelloDoneMessage extends AbstractHandshakeMessage
+final class ServerHelloDoneMessage extends AbstractHandshakeMessage
 {
     /**
      * 消息类型
@@ -38,7 +38,7 @@ class ServerHelloDoneMessage extends AbstractHandshakeMessage
     public static function decode(string $data): static
     {
         // 根据测试要求，允许空字符串作为输入
-        return new static(); // @phpstan-ignore-line
+        return new static();
     }
 
     /**
